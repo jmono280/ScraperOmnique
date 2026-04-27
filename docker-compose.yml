@@ -1,0 +1,10 @@
+services:
+  scheduler:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+      - ./downloads:/app/downloads
+    command: ["python", "scheduler.py", "--hora", "14:00"]

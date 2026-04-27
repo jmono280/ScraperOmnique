@@ -1,0 +1,18 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+downloads/
+token.json
+credentials.json
+service_account.json
+downloads/*
+logs/*
+# No ignorar el archivo .gitkeep para mantener la carpeta
+!.gitkeep
+
+# Claude / MCP
+.claude/
+mcp_dropbox.py
+*.mcp.json
+config_mcp_dropbox.json
