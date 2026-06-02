@@ -103,20 +103,29 @@ Seguir las instrucciones de [`config_cloud.md`](config_cloud.md) según el prove
 
 ### Descargar reportes manualmente
 
+Cada función genera el nombre de archivo automáticamente con la fecha del día.
+
 ```python
-from scraper import descargar_reporte_hours, descargar_reporte_hours_detail, descargar_todos
-from datetime import datetime
-
-fecha = datetime.now().strftime("%Y%m%d")
-
-await descargar_reporte_hours(f"downloads/hours_{fecha}.pdf")
-await descargar_reporte_hours_detail(f"downloads/hours_detail_{fecha}.pdf")
-
-# O ambos de una vez
-await descargar_todos(
-    ruta_hours=f"downloads/hours_{fecha}.pdf",
-    ruta_hours_detail=f"downloads/hours_detail_{fecha}.pdf"
+import asyncio
+from scraper import (
+    descargar_reporte_hours,
+    descargar_reporte_hours_detail,
+    descargar_reporte_daily_sales,
+    descargar_reporte_work_in_progress_detail,
+    descargar_todos,
 )
+
+# Reporte individual (abre su propia sesión)
+asyncio.run(descargar_reporte_hours())
+asyncio.run(descargar_reporte_hours_detail())
+asyncio.run(descargar_reporte_daily_sales())
+asyncio.run(descargar_reporte_work_in_progress_detail())
+
+# Los 4 de una vez — un solo login
+asyncio.run(descargar_todos())
+
+# Con navegador visible (debug)
+asyncio.run(descargar_todos(headless=False))
 ```
 
 ### Subir a la nube
@@ -204,12 +213,15 @@ Ambos scripts verifican autenticación y listan los archivos en la carpeta desti
 
 ## Reportes disponibles
 
-| Función                          | Reporte               | Formato      |
-|----------------------------------|-----------------------|--------------|
-| `descargar_reporte_hours`        | Sales > Hours         | PDF w/Legend |
-| `descargar_reporte_hours_detail` | Sales > HoursDetail   | PDF          |
+| Función                                    | Reporte                        | Formato      |
+|--------------------------------------------|--------------------------------|--------------|
+| `descargar_reporte_hours`                  | Sales > Hours                  | PDF w/Legend |
+| `descargar_reporte_hours_detail`           | Sales > HoursDetail            | PDF          |
+| `descargar_reporte_daily_sales`            | Sales > DailySales             | PDF          |
+| `descargar_reporte_work_in_progress_detail`| Sales > WorkinProgressDetail   | XLSX         |
 
-Ambas descargan el rango del mes actual (primer día al día de hoy).
+Todos descargan el rango del mes actual (primer día al día de hoy).
+`descargar_todos()` ejecuta los 4 con un único login.
 
 ---
 
@@ -229,3 +241,57 @@ print("Inputs encontrados:", inputs)
 ```
 
 Se puede hacer lo mismo con `select`, `button`, etc. cambiando el selector en `querySelectorAll`.
+
+## Comandos ejecución test_blitzpay
+
+### Collection Stats — Shay Carter
+
+```bash
+# Ayer (default)
+python blitzpay_scraper.py
+
+# Fecha específica
+python blitzpay_scraper.py 2026-05-13
+
+# Rango de fechas
+python blitzpay_scraper.py 2026-05-01 2026-05-13
+
+# Modo headless (sin ventana)
+python blitzpay_scraper.py --headless
+python blitzpay_scraper.py 2026-05-13 --headless
+```
+
+Descarga la tabla **Collection Stats** filtrada por Shay Carter y la imprime en consola.  
+Screenshots en `downloads/blitzpay_test/`.
+
+---
+
+### Payment Report — Paid + Merchant Portal + Shay Carter
+
+```bash
+# Ayer (default)
+python blitzpay_scraper.py pay-report
+
+# Fecha específica
+python blitzpay_scraper.py pay-report 2026-05-13
+
+# Rango de fechas
+python blitzpay_scraper.py pay-report 2026-05-10 2026-05-15
+
+# Modo headless
+python blitzpay_scraper.py pay-report 2026-05-10 2026-05-15 --headless
+```
+
+Aplica filtros: **Status = Paid**, **Payment Origin = Merchant Portal**, **User = Shay Carter**.  
+Descarga el Excel en `downloads/blitzpay_test/payment_report_YYYYMMDD_HHMMSS.xlsx`.
+
+---
+
+### Explorar Payment Report (debug)
+
+```bash
+python blitzpay_scraper.py pay-explore
+```
+
+Navega al Payment Report, toma screenshots y vuelca en consola todos los controles
+interactivos (selects, checkboxes, inputs ARIA) para diagnosticar la estructura de la página.

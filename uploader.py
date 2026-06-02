@@ -48,7 +48,7 @@ def subir_a_google_drive(ruta_archivo):
 
 
 # ── Dropbox ───────────────────────────────────────────────
-def subir_a_dropbox(ruta_archivo):
+def subir_a_dropbox(ruta_archivo, carpeta="omnique_reportes"):
     """pip install dropbox"""
     import dropbox
     from datetime import datetime
@@ -59,7 +59,7 @@ def subir_a_dropbox(ruta_archivo):
         oauth2_refresh_token=CLOUD_CONFIG["dropbox_refresh_token"],
     )
     nombre = ruta_archivo.split("/")[-1]
-    destino = f"/omnique_reportes/{datetime.now().strftime('%Y/%m')}/{nombre}"
+    destino = f"/{carpeta}/{datetime.now().strftime('%Y/%m')}/{nombre}"
 
     with open(ruta_archivo, "rb") as f:
         dbx.files_upload(f.read(), destino,
@@ -68,10 +68,10 @@ def subir_a_dropbox(ruta_archivo):
     return destino
 
 
-def subir_archivo(ruta_archivo):
+def subir_archivo(ruta_archivo, carpeta="omnique_reportes"):
     """Router: elige el cloud según config"""
     provider = CLOUD_CONFIG["provider"]
     if provider == "google_drive":
         return subir_a_google_drive(ruta_archivo)
     elif provider == "dropbox":
-        return subir_a_dropbox(ruta_archivo)
+        return subir_a_dropbox(ruta_archivo, carpeta)
